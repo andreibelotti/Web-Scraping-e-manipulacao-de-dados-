@@ -1,0 +1,44 @@
+# Etapa 2 transformação de dados
+# Bibliotecas utilizadas
+import pdfplumber
+import pandas as pd
+import zipfile
+
+# Caminho para o arquivo PDF
+pdf_path = r"C:\Users\Pichau\Desktop\Teste IntuitiveCare\Anexo_I_Rol_2021RN_465.2021_RN627L.2024.pdf"
+
+with pdfplumber.open(pdf_path) as pdf:
+    # Lista para armazenar as tabelas extraídas de cada página
+    all_tables = []
+    
+    # Percorre todas as páginas do PDF
+    for page in pdf.pages:
+        # Extrai a tabela de cada página
+        table = page.extract_table()
+        if table:
+            # Adiciona a tabela extraída à lista como DataFrame
+            df_page = pd.DataFrame(table[1:], columns=table[0])  # Ignora o cabeçalho da tabela
+            all_tables.append(df_page)
+
+# Unindo todas as tabelas extraídas em um único DataFrame
+df = pd.concat(all_tables, ignore_index=True)
+
+# Substituindo as abreviações nas colunas
+df.rename(columns={"OD": "Seg. Odontológica", "AMB": "Seg. Ambulatorial"}, inplace=True)
+
+# Constultando as primeiras linhas das colunas para confirmar alteração de nome
+print(df["Seg. Odontológica"].head())
+print(df["Seg. Ambulatorial"].head())
+
+# Caminho para salvar o CSV
+csv_path = "Rol_de_Procedimentos.csv"
+
+# Salvando os dados em um arquivo CSV
+df.to_csv(csv_path, index=False)
+
+# Compactando o CSV no arquivo ZIP
+zip_filename = "Teste_AndreiBelotti.zip"
+with zipfile.ZipFile(zip_filename, 'w') as zipf:
+    zipf.write(csv_path, arcname="Rol_de_Procedimentos.csv")
+
+print(f"Tabela salva em {csv_path} e compactada em {zip_filename}")
