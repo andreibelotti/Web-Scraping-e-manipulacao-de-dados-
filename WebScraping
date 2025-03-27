@@ -1,0 +1,44 @@
+# Etapa 1 teste de Web Scraping
+# Bibliotecas utilizadas
+import os
+import requests
+from bs4 import BeautifulSoup
+from zipfile import ZipFile
+
+url = "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos"
+
+# Pasta para armazenar os PDFs
+download_folder = "Teste IntuitiveCare"
+os.makedirs(download_folder, exist_ok=True)
+
+# Realiza a requisição ao site
+response = requests.get(url)
+response.raise_for_status()
+
+# Converte o HTML baixado em um objeto manipulável
+soup = BeautifulSoup(response.text, "html.parser")
+
+# Filtra os links que contêm Anexo no texto e terminam em .pdf e os armazena na lista pdf_links
+pdf_links = []
+for link in soup.find_all("a", href=True):
+    if "Anexo" in link.text and link["href"].endswith(".pdf"):
+        pdf_links.append(link["href"])
+
+# Download dos PDFs
+downloaded_files = []
+for pdf_url in pdf_links:
+    pdf_name = pdf_url.split("/")[-1]
+    pdf_path = os.path.join(download_folder, pdf_name)
+    pdf_response = requests.get(pdf_url)
+    with open(pdf_path, "wb") as pdf_file:
+        pdf_file.write(pdf_response.content)
+    downloaded_files.append(pdf_path)
+
+# Compactação dos PDFs
+zip_filename = "Teste Andrei Belotti.zip"
+zip_path = os.path.join(download_folder, zip_filename)
+with ZipFile(zip_path, "w") as zipf:
+    for file in downloaded_files:
+        zipf.write(file, os.path.basename(file))
+# Resultado
+print(f"Compactação concluída: {zip_filename}")
