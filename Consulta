@@ -1,0 +1,33 @@
+# Consulta operadoras trimestre
+SELECT 
+    o.razao_social AS operadora,
+    SUM(d.valor) AS total_despesas
+FROM 
+    despesas d
+JOIN 
+    operadoras o ON d.operadora_id = o.operadora_id
+WHERE 
+    d.categoria = "EVENTOS/ SINISTROS CONHECIDOS OU AVISADOS DE ASSISTÊNCIA A SAÚDE MÉDICO HOSPITALAR"
+    AND d.data >= CURDATE() - INTERVAL 3 MONTH
+GROUP BY 
+    o.operadora_id
+ORDER BY 
+    total_despesas DESC
+LIMIT 10;
+
+# Consulta operadoras ultimo ano
+SELECT 
+    o.razao_social AS operadora,
+    SUM(d.valor) AS total_despesas
+FROM 
+    despesas d
+JOIN 
+    operadoras o ON d.operadora_id = o.operadora_id
+WHERE 
+    d.categoria = "EVENTOS/ SINISTROS CONHECIDOS OU AVISADOS DE ASSISTÊNCIA A SAÚDE MÉDICO HOSPITALAR"
+    AND d.data >= CURDATE() - INTERVAL 1 YEAR
+GROUP BY 
+    o.operadora_id
+ORDER BY 
+    total_despesas DESC
+LIMIT 10;
